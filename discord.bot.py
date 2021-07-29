@@ -18,23 +18,6 @@ async def on_ready():
     print('Success!')
 
 
-@client.command(pass_context=True)
-async def join(ctx):
-    if ctx.author.voice:
-        channel = ctx.message.author.voice.channel
-        await channel.connect()
-    else:
-        await ctx.send("Must be in a voice channel.")
-
-
-@client.command(pass_context=True)
-async def leave(ctx):
-    if ctx.voice_client:
-        await ctx.guild.voice_client.disconnect()
-    else:
-        await ctx.send("I already left...")
-
-
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
