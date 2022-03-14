@@ -7,15 +7,20 @@ from textblob import TextBlob
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
-client = commands.Bot(command_prefix='.')
+intents = discord.Intents.default()
+intents.members = True
+client = commands.Bot(command_prefix='.', intents=intents)
 client.remove_command('help')
 
+
+# Setup bot details
 @client.event
 async def on_ready():
     activity = discord.Game(name="Escape from Tarkov", type=3)
     await client.change_presence(activity=activity)
     print('Success!')
 
+# Handler for insufficient permissions
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
@@ -23,6 +28,7 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.MissingPermissions):
         await ctx.send('You do not have permission to use this command.')
 
+# Return the help menu
 @client.command()
 async def help(ctx):
     embed = discord.Embed(
@@ -41,13 +47,9 @@ async def help(ctx):
 
     await ctx.send(embed=embed)
 
-@client.command()
-@commands.has_permissions(manage_messages=True)
-async def clear(ctx, amount=3):
-    await ctx.channel.purge(limit=amount)
-
-@client.command()
-async def p(ctx, input=None):
+# Return the price of an item
+@client.command(aliases=['p'])
+async def price(ctx, input=None):
     def searchAPI(string):
         itemQuery = '''\
             {
@@ -98,6 +100,7 @@ async def p(ctx, input=None):
         else:
             await ctx.send("No items found, please try again.")
  
+# Solar calculation
 @client.command()
 async def solar(ctx):
     fuel = 166824
@@ -125,6 +128,7 @@ async def solar(ctx):
 
     await ctx.send(f'Total cost: ₽{total_cost}')
 
+# Return gpu calculations
 @client.command()
 async def gpu(ctx, input=None):
     try:
@@ -165,6 +169,7 @@ async def gpu(ctx, input=None):
     except:
         await ctx.send("Second input is required.")
 
+# Return statistics for an item
 @client.command()
 async def stat(ctx, input=None):
     if input:
@@ -181,6 +186,7 @@ async def stat(ctx, input=None):
     else:
         await ctx.send('Input is required.')
 
+# Return a random item
 @client.command()
 async def rand(ctx, input=None):
     if input:
@@ -191,6 +197,7 @@ async def rand(ctx, input=None):
     else:
         await ctx.send('Input is required.')
 
+# Generate a random kit
 @client.command()
 async def kit(ctx):
     embed = discord.Embed(
@@ -213,37 +220,44 @@ async def kit(ctx):
 
     await ctx.send(embed=embed)
 
+# Generate a random kit for each member in a voice channel
 @client.command()
 async def kits(ctx):
-    day_night = random.choice(time)
-    map_choice = random.choice(mapchoice)
-    communication = random.choice(coms)
-    channel = client.get_channel(814857337889488896)
-    members = channel.members
+    if ctx.author.voice and ctx.author.voice.channel:
+        channel = client.get_channel(ctx.author.voice.channel.id)
+        members = channel.members
+        day_night = random.choice(time)
+        map_choice = random.choice(mapchoice)
+        communication = random.choice(coms)
 
-    memberID = []
-    for member in members:
-        memberID.append(member.name)
-    
-    for player in memberID:
-        embed = discord.Embed(
-            title=f'Random Kit - {player}',
-            colour=discord.Colour.blue()
-        )
-        embed.add_field(name='───────────', value=f'**Weapon:** `{random.choice(weapon)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Number of mods:** `{random.choice(mods)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Grenades:** `{random.choice(grenades)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Headwear:** `{random.choice(headwear)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Headwear mods:** `{random.choice(headmods)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Headset (if applicable):** `{random.choice(headset)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Body armour:** `{random.choice(armour)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Tactical rig (if applicable):** `{random.choice(tacrig)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Backpack:** `{random.choice(backpack)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Meds:** `{random.choice(meds)}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Communication:** `{communication}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Map:** `{map_choice}`', inline=False)
-        embed.add_field(name='───────────', value=f'**Day/Night:** `{day_night}`', inline=False)
+        memberDetails = []
+        for member in members:
+            memberDetails.append({'id': member.id, 'name': member.name})
+        
+        for member in memberDetails:
+            embed = discord.Embed(
+                title=f'Random Kit',
+                colour=discord.Colour.blue()
+            )
+            embed.add_field(name='Prepared for', value=f'<@!{member["id"]}>', inline=True)
+            embed.add_field(name='───────────', value=f'**Weapon:** `{random.choice(weapon)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Number of mods:** `{random.choice(mods)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Grenades:** `{random.choice(grenades)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Headwear:** `{random.choice(headwear)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Headwear mods:** `{random.choice(headmods)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Headset (if applicable):** `{random.choice(headset)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Body armour:** `{random.choice(armour)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Tactical rig (if applicable):** `{random.choice(tacrig)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Backpack:** `{random.choice(backpack)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Meds:** `{random.choice(meds)}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Communication:** `{communication}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Map:** `{map_choice}`', inline=False)
+            embed.add_field(name='───────────', value=f'**Day/Night:** `{day_night}`', inline=False)
 
-        await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
+    else:
+        await ctx.send("You need to be in a voice channel for this command to work.")
+
+# Run the bot
 client.run(token)
