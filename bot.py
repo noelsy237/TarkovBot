@@ -1,4 +1,4 @@
-import os, random, discord, re, requests, datetime
+import os, random, discord, re, requests, datetime, json
 from items import *
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -27,6 +27,8 @@ async def on_command_error(ctx, error):
         await ctx.send('Invalid command, try `.help`')
     elif isinstance(error, commands.MissingPermissions):
         await ctx.send('You do not have permission to use this command.')
+    else:
+        print(error)
 
 # Return the help menu
 @client.command()
@@ -47,58 +49,59 @@ async def help(ctx):
 
     await ctx.send(embed=embed)
 
-# Return the price of an item
+# Return the price of an item (beta)
 @client.command(aliases=['p'])
-async def price(ctx, input=None):
-    def searchAPI(string):
-        itemQuery = '''\
-            {
-                itemsByName(name: "%s") {
-                    name
-                    shortName
-                    types
-                    lastLowPrice
-                }\
-            }
-            ''' % (string)
+async def price(ctx, *, input=None):
+    def searchPriceList(input):
+        with open('data/items.json', 'r') as f:
+            items = json.load(f)
+        
+        for item in items:
+            if input in item['aliases'] or input == item['name']:
+                return {'name': item['name'], 'short_name': item['aliases'][0], 'href': item['href']}
 
-        response = requests.post('https://tarkov-tools.com/graphql', json={'query': itemQuery})
-        if response.status_code == 200:
-            return response.json()['data']['itemsByName']
-        else:
-            raise Exception("Query failed to run by returning code of {}. {}".format(response.status_code, itemQuery))
+    def scrapePrice(href):
+        endpoint = f"https://tarkov-market.com/item/{href}"
+        request = requests.get(endpoint)
+        scraper = BeautifulSoup(request.content, "html.parser")
+        price = int(re.sub('[,₽]', '', ((scraper.find("div", {"class": "big"})).get_text())))
+        return price
 
-    userInput = input
-    itemsResult = searchAPI(userInput)
-
-    if len(itemsResult) > 1:
-        for item in itemsResult:
-            resultEmbed = discord.Embed(
+    def sendPriceEmbed(item):
+        resultEmbed = discord.Embed(
                 title=f"{item['name']}",
                 colour=discord.Colour.blue()
             )
-            resultEmbed.add_field(name="Short Name:", value=f"{item['shortName']}", inline=False)
-            resultEmbed.add_field(name="Type:", value=f"{item['types'][0]}", inline=False)
-            resultEmbed.add_field(name="Last Price:", value=f"{item['lastLowPrice']}₽", inline=False)
-            await ctx.send(embed=resultEmbed)
-    else:
-        await ctx.send("Item not found. Trying spell correct...")
-        textBlb = TextBlob(userInput)
-        textCorrected = textBlb.correct()
-        itemsResult = searchAPI(textCorrected)
-        if len(itemsResult) > 1:
-            for item in itemsResult:
-                resultEmbed = discord.Embed(
-                    title=f"{item['name']}",
-                    colour=discord.Colour.blue()
-                )
-                resultEmbed.add_field(name="Short Name:", value=f"{item['shortName']}", inline=False)
-                resultEmbed.add_field(name="Type:", value=f"{item['types'][0]}", inline=False)
-                resultEmbed.add_field(name="Last Price:", value=f"{item['lastLowPrice']}₽", inline=False)
-                await ctx.send(embed=resultEmbed)
+        resultEmbed.add_field(name="Short Name", value=item['short_name'], inline=False)
+        resultEmbed.add_field(name="Last Price", value=f"{item['price']}₽", inline=False)
+        resultEmbed.add_field(name="Market Link", value=f"https://tarkov-market.com/item/{item['href']}", inline=False)
+        return(resultEmbed)
 
+    if input:
+        input.strip()
+        item = searchPriceList(input)
+        if item:
+            item['price'] = scrapePrice(item['href'])
+            await ctx.send(embed=sendPriceEmbed(item))
+        # Try and auto correct each word in input
         else:
-            await ctx.send("No items found, please try again.")
+            await ctx.send("Item not found. Trying spell correct...")
+            words = input.split(' ')
+            correctedWords = ""
+            for word in words:
+                wordBlb = TextBlob(word)
+                word = wordBlb.correct()
+                correctedWords += str(word) + " "
+                print(correctedWords)
+                        
+            href = searchPriceList(correctedWords.strip())
+            if href:
+                item['price'] = scrapePrice(item['href'])
+                await ctx.send(embed=sendPriceEmbed(item))
+            else:
+                await ctx.send("No items found, please try again.")
+    else:
+        await ctx.send('Input required.')
  
 # Solar calculation
 @client.command()
