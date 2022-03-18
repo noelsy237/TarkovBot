@@ -44,10 +44,6 @@
     "aliases": ["AN/PEQ-15"]
   },
   {
-    "name": "Глушитель Silencerco Sparrow 22 .22LR",
-    "aliases": ["Sparrow 22"]
-  },
-  {
     "name": "ER FULCRUM BAYONET",
     "aliases": ["ER BAYONET"]
   },
@@ -74,14 +70,6 @@
   {
     "name": "Leupold Mark 4 HAMR 4x24mm DeltaPoint hybrid assault scope",
     "aliases": ["HAMR"]
-  },
-  {
-    "name": "Оптический прицел Nightforce NXS 2.5-10x24",
-    "aliases": ["NXS 2.5-10"]
-  },
-  {
-    "name": "Оптический прицел ELCAN Specter OS4x",
-    "aliases": ["OS4x"]
   },
   {
     "name": "Crye Precision AVS plate carrier",
@@ -158,10 +146,6 @@
   {
     "name": "EOTech EXPS3 holographic sight (Tan)",
     "aliases": ["EXPS3"]
-  },
-  {
-    "name": "Компенсатор ГК-00",
-    "aliases": ["ГК-00"]
   },
   {
     "name": "5.56x45 Magpul PMAG 30 GEN M3 W STANAG 30-round magazine",
@@ -282,10 +266,6 @@
   {
     "name": "SureFire SOCOM556-MONSTER 5.56x45 sound suppressor",
     "aliases": ["556-MONSTER"]
-  },
-  {
-    "name": "Глушитель Knight's Armament Company KAC QDC Suppressor 6.5x35",
-    "aliases": ["6.5QDCS"]
   },
   {
     "name": "SureFire SOCOM556-MINI MONSTER 5.56x45 sound suppressor",
@@ -425,7 +405,7 @@
   },
   {
     "name": "Tactica Tula 10000 mount",
-    "aliases": ["ТТ 10000"]
+    "aliases": ["TT 10000"]
   },
   {
     "name": "NcSTAR MPR45 Backup mount",
@@ -8868,7 +8848,7 @@
     "aliases": ["GP-7"]
   },
   {
-    "name": "Azimut SS Zhuk сhest рarness (Black)",
+    "name": "Azimut SS Zhuk chest harness (Black)",
     "aliases": ["Azimut"]
   },
   {
@@ -8896,7 +8876,7 @@
     "aliases": ["TP-200"]
   },
   {
-    "name": "Azimut SS Zhuk сhest рarness (SURPAT)",
+    "name": "Azimut SS Zhuk chest harness (SURPAT)",
     "aliases": ["Azimut"]
   },
   {
@@ -9188,8 +9168,8 @@
     "aliases": ["MTs-255 beech"]
   },
   {
-    "name": "МTs-255-12 12ga 755mm barrel with rib",
-    "aliases": ["МTs-255 755mm rib"]
+    "name": "MTs-255-12 12ga 755mm barrel with rib",
+    "aliases": ["MTs-255 755mm rib"]
   },
   {
     "name": "MTs-255-12 wooden stock",
