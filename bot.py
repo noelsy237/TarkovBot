@@ -1,24 +1,24 @@
-import os, random, discord, re, requests, datetime, json
+import os, random, discord, re, requests, datetime, json, asyncio
 from items import *
 from dotenv import load_dotenv
-from discord.ext import commands
+from discord.ext import commands, tasks
 from bs4 import BeautifulSoup
 from textblob import TextBlob
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 intents.members = True
-intents.message_content = True
 client = commands.Bot(command_prefix='.', intents=intents)
 client.remove_command('help')
-
+intents.voice_states = True
 
 # Setup bot details
 @client.event
 async def on_ready():
     activity = discord.Game(name="Escape from Tarkov", type=3)
     await client.change_presence(activity=activity)
+    check_camera_status.start()
     print('Success!')
 
 # Handler for insufficient permissions
@@ -49,6 +49,18 @@ async def help(ctx):
     embed.add_field(name='Clear', value='Use the command `.clear` to clear the previous command.', inline=False)
 
     await ctx.send(embed=embed)
+@tasks.loop(seconds=30)    
+async def check_camera_status():
+    channel_id = 1204190077383745626
+    channel = client.get_channel(channel_id)
+    output_channel = client.get_channel(838386003227836439)
+
+    if channel:
+        for member in channel.members:
+            if not member.voice.self_video:
+                await member.move_to(None)
+                await output_channel.send(f'{member.display_name} was kicked for not turning on their camera.')
+                print(f'{member.display_name} was kicked for not turning on their camera.')
 
 # Return the price of an item (beta)
 @client.command(aliases=['p'])
