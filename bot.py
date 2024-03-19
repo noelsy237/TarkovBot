@@ -19,6 +19,7 @@ async def on_ready():
     activity = discord.Game(name="Escape from Tarkov", type=3)
     await client.change_presence(activity=activity)
     check_camera_status.start()
+    check_deaf_status.start()
     print('Success!')
 
 # Handler for insufficient permissions
@@ -49,6 +50,7 @@ async def help(ctx):
     embed.add_field(name='Clear', value='Use the command `.clear` to clear the previous command.', inline=False)
 
     await ctx.send(embed=embed)
+
 @tasks.loop(seconds=30)    
 async def check_camera_status():
     channel_id = 1204190077383745626
@@ -61,6 +63,19 @@ async def check_camera_status():
                 await member.move_to(None)
                 await output_channel.send(f'{member.display_name} was kicked for not turning on their camera.')
                 print(f'{member.display_name} was kicked for not turning on their camera.')
+
+@tasks.loop(seconds=5)    
+async def check_deaf_status():
+    channel_ids = client.get_channel(1185031033364676648), client.get_channel(1191727879743094924), client.get_channel(1218755488150458418), client.get_channel(1007204325887582248), client.get_channel(814857337889488896), client.get_channel(1204190077383745626), client.get_channel(815140823024664586), client.get_channel(838030772577239090), client.get_channel(989690253315022868), client.get_channel(760793358280425492)
+    output_channel = client.get_channel(838386003227836439)
+    loser_channel = client.get_channel(1219591417178099763)
+    for channel in channel_ids:
+        if channel:
+            for member in channel.members:
+                if member.voice.self_deaf:
+                    await member.move_to(loser_channel)
+                    await output_channel.send(f'{member.display_name} was kicked for being a loser.')
+                    print(f'{member.display_name} was kicked for being a loser.')
 
 # Return the price of an item (beta)
 @client.command(aliases=['p'])
