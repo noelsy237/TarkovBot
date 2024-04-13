@@ -80,7 +80,7 @@ async def check_deaf_status():
         if channel:
             for member in channel.members:
                 if member.voice and member.voice.channel:
-                    if member.voice.self_deaf and member.id != 253828020412874752:
+                    if member.voice.self_deaf and 1228652251829112904 not in [role.id for role in member.roles]:
                         original_channels[member.id] = member.voice.channel  # Store the original channel
                         await member.move_to(loser_channel)
                         await output_channel.send(f'{member.display_name} was kicked for being a loser.')
